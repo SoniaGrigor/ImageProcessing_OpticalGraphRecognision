@@ -2,7 +2,7 @@
 
 ### To Do
 
--clustering pixels into single line
+-clustering pixels into single line\n
 -check connection betweend lines and circles
 -write adjacency list for graph
 -inprovements database and code
