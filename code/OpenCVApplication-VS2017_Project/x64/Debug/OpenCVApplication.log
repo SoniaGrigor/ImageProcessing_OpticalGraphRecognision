@@ -1,0 +1,81 @@
+﻿  OpenCVApplication.cpp
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(22): warning C4305: 'initializing': truncation from 'double' to 'float'
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(445): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(459): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(553): warning C4244: '=': conversion from 'double' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=uchar
+          ]
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(621): warning C4244: '=': conversion from 'float' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=uchar
+          ]
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(622): warning C4244: '=': conversion from 'float' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=uchar
+          ]
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(623): warning C4244: '=': conversion from 'float' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=uchar
+          ]
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(691): warning C4244: 'argument': conversion from 'double' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=uchar
+          ]
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(787): warning C4101: 'm': unreferenced local variable
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(865): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(866): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(867): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(868): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(847): warning C4101: 'index': unreferenced local variable
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(846): warning C4101: 'aux': unreferenced local variable
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(847): warning C4101: 'pixel': unreferenced local variable
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(918): warning C4244: '=': conversion from 'float' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=uchar
+          ]
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(925): warning C4244: '=': conversion from 'float' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=uchar
+          ]
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(941): warning C4244: '=': conversion from 'float' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=uchar
+          ]
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(1030): warning C4305: 'initializing': truncation from 'double' to 'float'
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(1187): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(1194): warning C4305: '=': truncation from 'double' to 'float'
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(1200): warning C4244: '=': conversion from 'float' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=int
+          ]
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(1201): warning C4244: '=': conversion from 'float' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=int
+          ]
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(1202): warning C4244: '=': conversion from 'float' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=int
+          ]
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(1203): warning C4244: '=': conversion from 'float' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=int
+          ]
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(1784): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+e:\an3\sem2\pi\lab\lab3\opencvapplication-vs2017_ocv340_basic\opencvapplication.cpp(430): warning C4715: 'binarisePixels': not all control paths return a value
+  OpenCVApplication.vcxproj -> E:\AN3\SEM2\PI\Lab\Lab3\OpenCVApplication-VS2017_OCV340_basic\x64\Debug\OpenCVApplication.exe
+  OpenCV\dll\Debug\opencv_ffmpeg340_64.dll
+  OpenCV\dll\Debug\opencv_world340d.dll
+          2 file(s) copied.

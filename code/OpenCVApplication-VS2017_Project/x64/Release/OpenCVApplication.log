@@ -1,0 +1,13 @@
+﻿  OpenCVApplication.cpp
+e:\an3\sem2\pi\project\project\opencvapplication-vs2017_project\opencvapplication.cpp(691): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+e:\an3\sem2\pi\project\project\opencvapplication-vs2017_project\opencvapplication.cpp(861): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 1 has type 'unsigned __int64'
+  e:\an3\sem2\pi\project\project\opencvapplication-vs2017_project\opencvapplication.cpp(861): note: consider using '%zd' in the format string
+  Generating code
+  0 of 700 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  OpenCVApplication.vcxproj -> E:\AN3\SEM2\PI\Project\Project\OpenCVApplication-VS2017_Project\x64\Release\OpenCVApplication.exe
+  OpenCV\dll\Release\opencv_ffmpeg340_64.dll
+  OpenCV\dll\Release\opencv_world340.dll
+          2 file(s) copied.
