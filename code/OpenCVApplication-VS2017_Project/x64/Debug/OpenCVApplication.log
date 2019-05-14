@@ -1,10 +1,10 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(391,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (OpenCVApplication.vcxproj).  This can lead to incorrect clean and rebuild behavior.
   OpenCVApplication.cpp
-e:\an3\sem2\pi\project\git\code\opencvapplication-vs2017_project\opencvapplication.cpp(712): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-e:\an3\sem2\pi\project\git\code\opencvapplication-vs2017_project\opencvapplication.cpp(869): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-e:\an3\sem2\pi\project\git\code\opencvapplication-vs2017_project\opencvapplication.cpp(956): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 1 has type 'unsigned __int64'
-  e:\an3\sem2\pi\project\git\code\opencvapplication-vs2017_project\opencvapplication.cpp(956): note: consider using '%zd' in the format string
-e:\an3\sem2\pi\project\git\code\opencvapplication-vs2017_project\opencvapplication.cpp(475): warning C4715: 'binaryPixel': not all control paths return a value
+e:\an3\sem2\pi\project\git\code\opencvapplication-vs2017_project\opencvapplication.cpp(729): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+e:\an3\sem2\pi\project\git\code\opencvapplication-vs2017_project\opencvapplication.cpp(878): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+e:\an3\sem2\pi\project\git\code\opencvapplication-vs2017_project\opencvapplication.cpp(995): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 1 has type 'unsigned __int64'
+  e:\an3\sem2\pi\project\git\code\opencvapplication-vs2017_project\opencvapplication.cpp(995): note: consider using '%zd' in the format string
+e:\an3\sem2\pi\project\git\code\opencvapplication-vs2017_project\opencvapplication.cpp(491): warning C4715: 'binaryPixel': not all control paths return a value
   OpenCVApplication.vcxproj -> E:\AN3\SEM2\PI\Project\GIT\code\OpenCVApplication-VS2017_Project\x64\Debug\Project.exe
   OpenCV\dll\Debug\opencv_ffmpeg340_64.dll
   OpenCV\dll\Debug\opencv_world340d.dll

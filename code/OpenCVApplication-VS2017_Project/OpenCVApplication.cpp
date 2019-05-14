@@ -1,5 +1,3 @@
-// OpenCVApplication.cpp : Defines the entry point for the console application.
-//
 
 #include "stdafx.h"
 #include "common.h"
@@ -27,15 +25,33 @@
 #define RESIZED_IMAGE_WIDTH 20
 #define RESIZED_IMAGE_HEIGHT 30
 
+#define DISTANCE_BTW_CENTERS 30
+
 using namespace cv;
 using namespace std;
+
+typedef struct nodeInfo {
+	Point position;
+	int value;
+}NodeInfo;
+
+typedef struct node {
+	Point circle;
+	NodeInfo info;
+}Node_;
 
 int di[4] = { 0, -1, -1, -1 };
 int dj[4] = { -1, -1, 0, +1, };
 
+
 Vec3b culoriRandom[1000];
 int label;
 int newLabel;
+
+vector<NodeInfo> graphNodes;
+NodeInfo currentNode;
+vector<Node_> nodes;
+vector<Point> centerCircles;
 
 class ContourWithData {
 public:
@@ -507,6 +523,7 @@ Mat houghCirclesFuncionImage(Mat img) {
 	for (size_t i = 0; i < circles.size(); i++)
 	{
 		Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+		centerCircles.push_back(center);
 		int radius = cvRound(circles[i][2]);
 		// circle center
 		circle(circlesImage, center, 3, Scalar(0, 255, 255), -1, 8, 0);
@@ -721,6 +738,10 @@ void setEdges(vector<Vec4i> edges) {
 
 }
 
+Point computePosition(int maxX, int minX, int maxY, int minY) {
+	return Point(minX + abs(maxX - minX) / 2, minY + abs(maxY - minY) / 2);
+}
+
 bool isDigit(Mat img) {
 	int height = img.rows;
 	int width = img.cols;
@@ -745,44 +766,33 @@ bool isDigit(Mat img) {
 		}
 	}
 
-	printf("minX=%d, maxX=%d, minY=%d, maxY=%d\n", minX, maxX, minY, maxY);
+	//printf("minX=%d, maxX=%d, minY=%d, maxY=%d\n", minX, maxX, minY, maxY);
 	if (maxX - minX >= DIGIT_HIGHT_MIN && maxX - minX <= DIGIT_HIGHT_MAX) {
 		if (maxY - minY >= DIGIT_WIDTH_MIN && maxY - minY <= DIGIT_WIDTH_MAX) {
+			currentNode.position = computePosition(maxX, minX, maxY, minY);
 			return true;
 		}
 	}
 	return false;
 }
 
-vector<Mat> detectDigitImages(vector<Mat> images, int treashold) {
-	vector<Mat> digits;
-	Mat binarizeImage;
-	int numberOfBlackPixels;
-	for (int i = 0; i < images.size(); i++) {
-		numberOfBlackPixels = 0;
-
-		//convert image from RGB to GrayScale
-		Mat src_gray = Mat(images[i].rows, images[i].cols, CV_8UC1);
-		cvtColor(images[i], src_gray, CV_BGR2GRAY);
-
-		binarizeImage = binaryImage(src_gray);
-		for (int j = 0; j < binarizeImage.rows; j++) {
-			for (int k = 0; k < binarizeImage.cols; k++) {
-				if (binarizeImage.at<uchar>(j, k) == 0) {
-					numberOfBlackPixels++;
-				}
+void bindCircleInfo() {
+	for (int i = 0; i < centerCircles.size(); i++) {
+		for (int j = 0; j < graphNodes.size(); j++) {
+			//euclidian distance between 2 centers
+			if ((abs(centerCircles[i].x - graphNodes[j].position.x) + abs(centerCircles[i].y - graphNodes[j].position.y)) < DISTANCE_BTW_CENTERS) {
+				Node_ node_;
+				node_.circle = centerCircles[i];
+				//TO DO remove found value from graphNodes
+				node_.info = graphNodes[j];
+				nodes.push_back(node_);
 			}
 		}
-		//imshow("Images", images[i]);
-		//waitKey(500);
-		if (numberOfBlackPixels >= treashold && isDigit(images[i])) {
-			digits.push_back(images[i]);
-		}
 	}
-	return digits;
 }
 
-void characterRecognision() {
+int characterRecognision(Mat characterImage) {
+	int value = -1;
 	std::vector<ContourWithData> allContoursWithData;           // declare empty vectors,
 	std::vector<ContourWithData> validContoursWithData;         // we will fill these shortly
 
@@ -807,7 +817,6 @@ void characterRecognision() {
 
 	if (fsTrainingImages.isOpened() == false) {                                                 // if the file was not opened successfully
 		std::cout << "error, unable to open training images file, exiting program\n\n";         // show error message
-
 	}
 
 	fsTrainingImages["images"] >> matTrainingImagesAsFlattenedFloats;           // read images section into Mat training images variable
@@ -823,7 +832,7 @@ void characterRecognision() {
 
 	// test ///////////////////////////////////////////////////////////////////////////////
 
-	cv::Mat matTestingNumbers = cv::imread("13.jpg");            // read in the test numbers image
+	cv::Mat matTestingNumbers = characterImage;            // read in the test numbers image
 
 	if (matTestingNumbers.empty()) {                                // if unable to open image
 		std::cout << "error: image not read from file\n\n";         // show error message on command line
@@ -904,19 +913,50 @@ void characterRecognision() {
 
 		float fltCurrentChar = (float)matCurrentChar.at<float>(0, 0);
 
+		value = int(fltCurrentChar) - 48;
 		strFinalString = strFinalString + char(int(fltCurrentChar));        // append current char to full string
 	}
 
-	std::cout << "\n\n" << "numbers read = " << strFinalString << "\n\n";       // show the full string
+	std::cout << "numbers read = " << strFinalString << "\n";       // show the full string
 
 	cv::imshow("matTestingNumbers", matTestingNumbers);     // show input image with green boxes drawn around found digits
 
-	cv::waitKey(0);                                         // wait for user key press
-
+	cv::waitKey(10);
+	return value;
 }
 
-int main()
-{
+vector<Mat> detectDigitImages(vector<Mat> images, int treashold) {
+	vector<Mat> digits;
+	Mat binarizeImage;
+	int numberOfBlackPixels;
+	for (int i = 0; i < images.size(); i++) {
+		numberOfBlackPixels = 0;
+
+		//convert image from RGB to GrayScale
+		Mat src_gray = Mat(images[i].rows, images[i].cols, CV_8UC1);
+		cvtColor(images[i], src_gray, CV_BGR2GRAY);
+
+		binarizeImage = binaryImage(src_gray);
+		for (int j = 0; j < binarizeImage.rows; j++) {
+			for (int k = 0; k < binarizeImage.cols; k++) {
+				if (binarizeImage.at<uchar>(j, k) == 0) {
+					numberOfBlackPixels++;
+				}
+			}
+		}
+		//imshow("Images", images[i]);
+		//waitKey(500);
+		if (numberOfBlackPixels >= treashold && isDigit(images[i])) {
+			currentNode.value = characterRecognision(images[i]);
+			graphNodes.push_back(currentNode);
+			digits.push_back(images[i]);
+		}
+	}
+	return digits;
+}
+
+int main() {
+
 	char fname[MAX_PATH];
 	while (openFileDlg(fname))
 	{
@@ -944,7 +984,6 @@ int main()
 		imagineEtichetata = etichetare(binarizedImg.clone());
 		imshow("Imagine Etichetata", imagineEtichetata);
 
-		//vector<Mat> objects = objectsFromImage(src);
 		vector<Mat>::iterator it;
 		vector<Vec4i> edges = houghLinesFuncion(binarizedImg.clone());
 		setEdges(edges);
@@ -954,9 +993,7 @@ int main()
 			waitKey(500);
 		}*/
 		printf("Nr Objects %d\n", objects.size());
-		for (int i = 0; i < newLabel; i++) {
-			//printf("%d,%d,%d\n", culoriRandom[i][0], culoriRandom[i][1], culoriRandom[i][2]);
-		}
+
 		/*for (int i = 0; i < objects.size(); i++) {
 			imshow("Object", objects[i]);
 			waitKey(100);
@@ -967,10 +1004,20 @@ int main()
 			waitKey(200);
 		}
 
-		characterRecognision();
+		for (int i = 0; i < graphNodes.size(); i++) {
+			printf("X=%d, Y=%d, value=%d\n", graphNodes[i].position.x, graphNodes[i].position.y, graphNodes[i].value);
+		}
 
+		bindCircleInfo();
+
+		for (int i = 0; i < nodes.size(); i++) {
+			printf("CircleX=%d, CircleY=%d, Value=%d\n", nodes[i].circle.x, nodes[i].circle.y, nodes[i].info.value);
+		}
 
 		waitKey();
 	}
-	return 0;
+
+	return(0);
 }
+
+
