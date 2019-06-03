@@ -190,16 +190,39 @@ vector<Vec4i> houghLinesFuncion(Mat img) {
 	vector<Vec4i> lines;
 	Mat cannyImage;
 	Canny(img, cannyImage, 180, 100, 3);
-	HoughLinesP(cannyImage, lines, 1, CV_PI / 180, 25, 20, 3);
+	HoughLinesP(cannyImage, lines, 1, CV_PI / 180, 35, 80, 6);
 	return lines;
 }
+
+Point computeCenter(Vec4i line) {
+	return Point(abs(line[2] - line[0]) / 2.0, abs(line[3] - line[1]) / 2.0);
+}
+
+vector<Vec4i> detectRealLines(vector<Vec4i> lines) {
+	vector<Vec4i> result;
+	for (int i = 0; i < lines.size()-1 ; i++) {
+		for (int j = i+1; j < lines.size(); j++) {
+			if (abs(computeCenter(lines[i]).x - computeCenter(lines[j]).x) < 5 || abs(computeCenter(lines[i]).y - computeCenter(lines[j]).y) < 5) {
+				lines.erase(lines.begin()+j);
+			}
+
+		}
+		result.push_back(lines[i]);
+	}
+	return result;
+}
+
 
 Mat houghFunctionImage(Mat img) {
 	Mat linesImage;
 	cvtColor(img, linesImage, CV_GRAY2BGR);
+
 	vector<Vec4i> lines = houghLinesFuncion(img);
-	for (size_t i = 0; i < lines.size(); i++) {
-		line(linesImage, Point(lines[i][0], lines[i][1]), Point(lines[i][2], lines[i][3]), Scalar(150, 0, 0), 3, 8);
+	vector<Vec4i> realLines = detectRealLines(lines);
+	for (int i = 0; i < realLines.size(); i++) {
+		line(linesImage, Point(realLines[i][0], realLines[i][1]), Point(realLines[i][2], realLines[i][3]), Scalar(0, 0, 255), 3, 8);
+		imshow("lineii", linesImage);
+		waitKey(20);
 	}
 	return linesImage;
 }
@@ -584,10 +607,6 @@ int main() {
 		//binarise the initial image
 		binarizedImg = binaryImage(src);
 		//imshow("binarizedImg", binarizedImg);
-
-		//detect edges
-		Canny(binarizedImg, edgeImg, 180, 100, 3, false);
-		//imshow("edgeImg", edgeImg);
 
 		//detect circles
 		circleImg = houghCirclesFuncionImage(src.clone());
