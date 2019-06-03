@@ -525,6 +525,7 @@ int characterRecognision(Mat characterImage) {
 		cv::Mat matCurrentChar(0, 0, CV_32F);
 
 		kNearest->findNearest(matROIFlattenedFloat, 1, matCurrentChar);     // finally we can call find_nearest !!!
+		//TO DO
 
 		float fltCurrentChar = (float)matCurrentChar.at<float>(0, 0);
 
@@ -614,10 +615,11 @@ int main() {
 			waitKey(100);
 		}*/
 		auto digits = detectDigitImages(objects, 50);
-		for (int i = 0; i < digits.size(); i++) {
+		/*for (int i = 0; i < digits.size(); i++) {
 			imshow("Object", digits[i]);
 			waitKey(200);
 		}
+		*/
 
 		for (int i = 0; i < graphNodes.size(); i++) {
 			printf("X=%d, Y=%d, value=%d\n", graphNodes[i].position.x, graphNodes[i].position.y, graphNodes[i].value);
