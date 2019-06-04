@@ -12,7 +12,9 @@
 #include<opencv2/core/core.hpp>
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
+#include <list>
 
+using namespace std;
 using namespace cv;
 using namespace std;
 
@@ -21,6 +23,8 @@ using namespace std;
 
 #define DIGIT_WIDTH_MIN 15
 #define DIGIT_WIDTH_MAX 50
+
+#define	LINE_CIRCLE_DISTANCE 75
 
 #define MIN_CONTOUR_AREA 100
 
@@ -51,6 +55,8 @@ NodeInfo currentNode;
 vector<Node_> nodes;
 vector<Point> centerCircles;
 
+int **adjacencyMatrix;
+
 class ContourWithData {
 public:
 	std::vector<cv::Point> ptContour;           // contour
@@ -67,35 +73,22 @@ public:
 	}
 };
 
-/* Histogram display function - display a histogram using bars (simlilar to L3 / PI)
-Input:
-name - destination (output) window name
-hist - pointer to the vector containing the histogram values
-hist_cols - no. of bins (elements) in the histogram = histogram image width
-hist_height - height of the histogram image
-Call example:
-showHistogram ("MyHist", hist_dir, 255, 200);
-*/
-void showHistogram(const std::string& name, int* hist, const int  hist_cols, const int hist_height)
+void addEdge(vector<int> adj[], int u, int v)
 {
-	Mat imgHist(hist_height, hist_cols, CV_8UC3, CV_RGB(255, 255, 255)); // constructs a white image
+	adj[u].push_back(v);
+	adj[v].push_back(u);
+}
 
-																		 //computes histogram maximum
-	int max_hist = 0;
-	for (int i = 0; i < hist_cols; i++)
-		if (hist[i] > max_hist)
-			max_hist = hist[i];
-	double scale = 1.0;
-	scale = (double)hist_height / max_hist;
-	int baseline = hist_height - 1;
-
-	for (int x = 0; x < hist_cols; x++) {
-		Point p1 = Point(x, baseline);
-		Point p2 = Point(x, baseline - cvRound(hist[x] * scale));
-		line(imgHist, p1, p2, CV_RGB(255, 0, 255)); // histogram bins colored in magenta
+// A utility function to print the adjacency list 
+// representation of graph 
+void printGraph(vector<int> adj[], int V)
+{
+	for (int v = 0; v < V; ++v)
+	{
+		cout << "\n " << v << " : ";
+		for (auto x : adj[v])
+			cout << "-> " << x;
 	}
-
-	imshow(name, imgHist);
 }
 
 int binaryPixel(int treshold, int initialValue) {
@@ -118,34 +111,6 @@ Mat binaryImage(Mat src) {
 		}
 	}
 	return dst;
-}
-
-vector<Vec3f> houghCirclesFuncion(Mat src) {
-	Mat src_gray = src.clone();
-	vector<Vec3f> circles;
-	/// Reduce the noise so we avoid false circle detection
-	GaussianBlur(src, src, Size(9, 9), 2, 2);
-	/// Apply the Hough Transform to find the circles
-	HoughCircles(src, circles, CV_HOUGH_GRADIENT, 1, src.rows / 10, 100, 100, 10, 70);
-	return circles;
-}
-
-Mat houghCirclesFuncionImage(Mat img) {
-	Mat circlesImage(img.rows, img.cols, CV_8UC3);
-	circlesImage.setTo(cv::Scalar(255, 255, 255));
-	vector<Vec3f> circles = houghCirclesFuncion(img);
-	/// Draw the circles detected
-	for (size_t i = 0; i < circles.size(); i++)
-	{
-		Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
-		centerCircles.push_back(center);
-		int radius = cvRound(circles[i][2]);
-		// circle center
-		circle(circlesImage, center, 3, Scalar(0, 255, 255), -1, 8, 0);
-		// circle outline
-		circle(circlesImage, center, radius, Scalar(250, 0, 255), 3, 8, 0);
-	}
-	return circlesImage;
 }
 
 Mat detectCircles(Mat src) {
@@ -194,37 +159,51 @@ vector<Vec4i> houghLinesFuncion(Mat img) {
 	return lines;
 }
 
+vector<Vec3f> houghCirclesFuncion(Mat src) {
+	Mat src_gray = src.clone();
+	vector<Vec3f> circles;
+	/// Reduce the noise so we avoid false circle detection
+	GaussianBlur(src, src, Size(9, 9), 2, 2);
+	/// Apply the Hough Transform to find the circles
+	HoughCircles(src, circles, CV_HOUGH_GRADIENT, 1, src.rows / 10, 100, 100, 10, 70);
+	return circles;
+}
+
+Mat houghCirclesFuncionImage(Mat img) {
+	Mat circlesImage(img.rows, img.cols, CV_8UC3);
+	circlesImage.setTo(cv::Scalar(255, 255, 255));
+	vector<Vec3f> circles = houghCirclesFuncion(img);
+	/// Draw the circles detected
+	for (size_t i = 0; i < circles.size(); i++)
+	{
+		Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+		centerCircles.push_back(center);
+		int radius = cvRound(circles[i][2]);
+		// circle center
+		circle(circlesImage, center, 3, Scalar(0, 255, 255), -1, 8, 0);
+		// circle outline
+		circle(circlesImage, center, radius, Scalar(250, 0, 255), 3, 8, 0);
+	}
+	return circlesImage;
+}
+
 Point computeCenter(Vec4i line) {
-	return Point(abs(line[2] - line[0]) / 2.0, abs(line[3] - line[1]) / 2.0);
+	//printf("line xmin %d xmax %d ymin%d ymax%d centerX%d centeY%d\n", line[0], line[2], line[3], line[1], line[0] + abs(line[2] - line[0]) / 2, line[3] + abs(line[3] - line[1]) / 2);
+	return Point(line[0] + abs(line[2] - line[0]) / 2, line[3] + abs(line[3] - line[1]) / 2);
 }
 
 vector<Vec4i> detectRealLines(vector<Vec4i> lines) {
 	vector<Vec4i> result;
-	for (int i = 0; i < lines.size()-1 ; i++) {
-		for (int j = i+1; j < lines.size(); j++) {
-			if (abs(computeCenter(lines[i]).x - computeCenter(lines[j]).x) < 5 || abs(computeCenter(lines[i]).y - computeCenter(lines[j]).y) < 5) {
-				lines.erase(lines.begin()+j);
+	for (int i = 0; i < lines.size(); i++) {
+		for (int j = 0; j < lines.size(); j++) {
+			if ((i != j) && (abs(computeCenter(lines[i]).x - computeCenter(lines[j]).x) < 5 || abs(computeCenter(lines[i]).y - computeCenter(lines[j]).y) < 5)) {
+				lines.erase(lines.begin() + j);
 			}
 
 		}
 		result.push_back(lines[i]);
 	}
 	return result;
-}
-
-
-Mat houghFunctionImage(Mat img) {
-	Mat linesImage;
-	cvtColor(img, linesImage, CV_GRAY2BGR);
-
-	vector<Vec4i> lines = houghLinesFuncion(img);
-	vector<Vec4i> realLines = detectRealLines(lines);
-	for (int i = 0; i < realLines.size(); i++) {
-		line(linesImage, Point(realLines[i][0], realLines[i][1]), Point(realLines[i][2], realLines[i][3]), Scalar(0, 0, 255), 3, 8);
-		imshow("lineii", linesImage);
-		waitKey(20);
-	}
-	return linesImage;
 }
 
 bool isInside(Mat img, int i, int j) {
@@ -583,8 +562,7 @@ vector<Mat> detectDigitImages(vector<Mat> images, int treashold) {
 				}
 			}
 		}
-		//imshow("Images", images[i]);
-		//waitKey(500);
+
 		if (numberOfBlackPixels >= treashold && isDigit(images[i])) {
 			currentNode.value = characterRecognision(images[i]);
 			graphNodes.push_back(currentNode);
@@ -594,6 +572,74 @@ vector<Mat> detectDigitImages(vector<Mat> images, int treashold) {
 	return digits;
 }
 
+void initializeAdiacentMatrix(int size) {
+	adjacencyMatrix = new int*[size];
+	for (int i = 0; i < size; ++i)
+		adjacencyMatrix[i] = new int[size];
+
+	for (int i = 0; i < 10; i++) {
+		for (int j = 0; j < 10; j++) {
+			adjacencyMatrix[i][j] = 0;
+		}
+	}
+}
+
+void bindLineWithCircles(Vec4i line) {
+	for (int i = 0; i < nodes.size() - 1; i++) {
+		if ((((abs(nodes[i].circle.x - line.val[0]) < LINE_CIRCLE_DISTANCE) && (abs(nodes[i].circle.y - line.val[1]) < LINE_CIRCLE_DISTANCE))) || ((abs(nodes[i].circle.x - line.val[2]) < LINE_CIRCLE_DISTANCE) && (abs(nodes[i].circle.y - line.val[3]) < LINE_CIRCLE_DISTANCE))) {
+			for (int j = i + 1; j < nodes.size(); j++) {
+				if ((((abs(nodes[j].circle.x - line.val[0]) < LINE_CIRCLE_DISTANCE) && (abs(nodes[j].circle.y - line.val[1]) < LINE_CIRCLE_DISTANCE))) || ((abs(nodes[j].circle.x - line.val[2]) < LINE_CIRCLE_DISTANCE) && (abs(nodes[j].circle.y - line.val[3]) < LINE_CIRCLE_DISTANCE))) {
+
+
+					adjacencyMatrix[nodes[i].info.value][nodes[j].info.value] = 1;
+					adjacencyMatrix[nodes[j].info.value][nodes[i].info.value] = 1;
+
+				}
+			}
+		}
+	}
+}
+
+void digitalizeGraph(Mat img) {
+	initializeAdiacentMatrix(10);
+	vector<Vec4i> lines = houghLinesFuncion(img);
+	vector<Vec4i> realLines = detectRealLines(lines);
+	Mat linesImage;
+	cvtColor(img, linesImage, CV_GRAY2BGR);
+	for (int i = 0; i < realLines.size(); i++) {
+		line(linesImage, Point(realLines[i][0], realLines[i][1]), Point(realLines[i][2], realLines[i][3]), Scalar(0, 0, 255), 3, 8);
+		imshow("Real Lines", linesImage);
+		waitKey(20);
+	}
+	for (int i = 0; i < realLines.size(); i++) {
+		bindLineWithCircles(realLines[i]);
+	}
+
+}
+
+void printAdjacencyMatrix() {
+	printf("\nAdjacency Matrix:\n");
+	for (int i = 0; i < 10; i++) {
+		for (int j = 0; j < 10; j++) {
+			printf("%d ", adjacencyMatrix[i][j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
+
+void convertAdjacencyMatrixToAdjacencyList() {
+	vector<int> adj[10];
+	for (int i = 0; i < 10; i++) {
+		for (int j = 0; j < 10; j++) {
+			if ((adjacencyMatrix[i][j] == 1) && (i < j)) {
+				addEdge(adj, i, j);
+			}
+		}
+	}
+	printf("\nAdjacency Matrix:");
+	printGraph(adj, 10);
+}
 int main() {
 
 	char fname[MAX_PATH];
@@ -602,53 +648,34 @@ int main() {
 		Mat src, binarizedImg, edgeImg, circleImg, linesImage, imagineEtichetata;
 
 		src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
-		//imshow("src", src);
 
-		//binarise the initial image
 		binarizedImg = binaryImage(src);
-		//imshow("binarizedImg", binarizedImg);
 
-		//detect circles
 		circleImg = houghCirclesFuncionImage(src.clone());
-		imshow("circleImg", circleImg);
-
-		//detect lines
-		linesImage = houghFunctionImage(binarizedImg.clone());
-		imshow("Lines", linesImage);
+		imshow("Real Circles", circleImg);
 
 		imagineEtichetata = etichetare(binarizedImg.clone());
-		imshow("Imagine Etichetata", imagineEtichetata);
+		imshow("Labeled Image", imagineEtichetata);
 
 		vector<Mat>::iterator it;
 		vector<Vec4i> edges = houghLinesFuncion(binarizedImg.clone());
 		setEdges(edges);
 		auto objects = objectsFromImage(src.clone());
-		/*for (int i = 0; i < objects.size(); i++) {
-			imshow("Object", objects[i]);
-			waitKey(500);
-		}*/
-		printf("Nr Objects %d\n", objects.size());
+		printf("Nr Objects: %d\n", objects.size());
 
-		/*for (int i = 0; i < objects.size(); i++) {
-			imshow("Object", objects[i]);
-			waitKey(100);
-		}*/
 		auto digits = detectDigitImages(objects, 50);
-		/*for (int i = 0; i < digits.size(); i++) {
-			imshow("Object", digits[i]);
-			waitKey(200);
-		}
-		*/
-
-		for (int i = 0; i < graphNodes.size(); i++) {
-			printf("X=%d, Y=%d, value=%d\n", graphNodes[i].position.x, graphNodes[i].position.y, graphNodes[i].value);
-		}
 
 		bindCircleInfo();
 
 		for (int i = 0; i < nodes.size(); i++) {
 			printf("CircleX=%d, CircleY=%d, Value=%d\n", nodes[i].circle.x, nodes[i].circle.y, nodes[i].info.value);
 		}
+
+		digitalizeGraph(binarizedImg.clone());
+
+		printAdjacencyMatrix();
+	
+		convertAdjacencyMatrixToAdjacencyList();
 
 		waitKey();
 	}
