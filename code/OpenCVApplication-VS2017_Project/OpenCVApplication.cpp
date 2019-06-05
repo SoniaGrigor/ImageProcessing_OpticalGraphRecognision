@@ -79,8 +79,6 @@ void addEdge(vector<int> adj[], int u, int v)
 	adj[v].push_back(u);
 }
 
-// A utility function to print the adjacency list 
-// representation of graph 
 void printGraph(vector<int> adj[], int V)
 {
 	for (int v = 0; v < V; ++v)
@@ -640,6 +638,7 @@ void convertAdjacencyMatrixToAdjacencyList() {
 	printf("\nAdjacency Matrix:");
 	printGraph(adj, 10);
 }
+
 int main() {
 
 	char fname[MAX_PATH];
