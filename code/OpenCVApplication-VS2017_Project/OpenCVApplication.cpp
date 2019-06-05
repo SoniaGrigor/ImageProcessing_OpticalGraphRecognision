@@ -49,13 +49,12 @@ int dj[4] = { -1, -1, 0, +1, };
 Vec3b culoriRandom[1000];
 int label;
 int newLabel;
+int **adjacencyMatrix;
 
 vector<NodeInfo> graphNodes;
 NodeInfo currentNode;
 vector<Node_> nodes;
 vector<Point> centerCircles;
-
-int **adjacencyMatrix;
 
 class ContourWithData {
 public:
@@ -111,44 +110,6 @@ Mat binaryImage(Mat src) {
 	return dst;
 }
 
-Mat detectCircles(Mat src) {
-	Mat src_gray = src.clone();
-	Mat result(src.rows, src.cols, CV_8UC3);
-	result.setTo(cv::Scalar(255, 255, 255));
-	vector<Vec3f> circles;
-
-	/// Reduce the noise so we avoid false circle detection
-	GaussianBlur(src, src, Size(9, 9), 2, 2);
-
-	/// Apply the Hough Transform to find the circles
-	HoughCircles(src, circles, CV_HOUGH_GRADIENT, 1, src.rows / 8, 200, 100, 0, 0);
-
-	/// Draw the circles detected
-	for (size_t i = 0; i < circles.size(); i++)
-	{
-		Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
-		int radius = cvRound(circles[i][2]);
-		// circle center
-		circle(result, center, 3, Scalar(0, 255, 0), -1, 8, 0);
-		// circle outline
-		circle(result, center, radius, Scalar(0, 0, 255), 3, 8, 0);
-	}
-	return result;
-}
-
-Mat detectLines(Mat img) {
-	vector<Vec4i> lines;
-	Mat cannyImage, color_dest;
-	Canny(img, cannyImage, 180, 100, 3);
-	cvtColor(img, color_dest, CV_GRAY2BGR);
-	HoughLinesP(cannyImage, lines, 1, CV_PI / 180, 25, 20, 3);
-
-	for (size_t i = 0; i < lines.size(); i++) {
-		line(color_dest, Point(lines[i][0], lines[i][1]), Point(lines[i][2], lines[i][3]), Scalar(150, 0, 0), 3, 8);
-	}
-	return color_dest;
-}
-
 vector<Vec4i> houghLinesFuncion(Mat img) {
 	vector<Vec4i> lines;
 	Mat cannyImage;
@@ -160,9 +121,7 @@ vector<Vec4i> houghLinesFuncion(Mat img) {
 vector<Vec3f> houghCirclesFuncion(Mat src) {
 	Mat src_gray = src.clone();
 	vector<Vec3f> circles;
-	/// Reduce the noise so we avoid false circle detection
 	GaussianBlur(src, src, Size(9, 9), 2, 2);
-	/// Apply the Hough Transform to find the circles
 	HoughCircles(src, circles, CV_HOUGH_GRADIENT, 1, src.rows / 10, 100, 100, 10, 70);
 	return circles;
 }
@@ -171,7 +130,6 @@ Mat houghCirclesFuncionImage(Mat img) {
 	Mat circlesImage(img.rows, img.cols, CV_8UC3);
 	circlesImage.setTo(cv::Scalar(255, 255, 255));
 	vector<Vec3f> circles = houghCirclesFuncion(img);
-	/// Draw the circles detected
 	for (size_t i = 0; i < circles.size(); i++)
 	{
 		Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
@@ -325,7 +283,6 @@ vector<Mat> objectsFromImage(Mat img) {
 	int width = img.cols;
 	vector<Mat>imagesOfObjects;
 	Mat imagineEtichetata = etichetare(img);
-	//printf("Nr culori: %d\n", newLabel);
 	for (int c = 0; c < newLabel; c++) {
 		Mat object = Mat(height, width, CV_8UC3);
 		for (int i = 0; i < height; i++) {
@@ -344,13 +301,6 @@ vector<int> getNodes(vector<Vec3f> circles) {
 	int V = circles.size();
 	vector<int> *nodes = new vector<int>(V);
 	return *nodes;
-}
-
-void setEdges(vector<Vec4i> edges) {
-	for (int i = 0; i < edges.size(); i++) {
-		//printf("Line P1=%d,%d P2=%d,%d\n", edges[i][0], edges[i][1], edges[i][2], edges[i][3]);
-	}
-
 }
 
 Point computePosition(int maxX, int minX, int maxY, int minY) {
@@ -658,17 +608,12 @@ int main() {
 
 		vector<Mat>::iterator it;
 		vector<Vec4i> edges = houghLinesFuncion(binarizedImg.clone());
-		setEdges(edges);
 		auto objects = objectsFromImage(src.clone());
 		printf("Nr Objects: %d\n", objects.size());
 
 		auto digits = detectDigitImages(objects, 50);
 
 		bindCircleInfo();
-
-		for (int i = 0; i < nodes.size(); i++) {
-			printf("CircleX=%d, CircleY=%d, Value=%d\n", nodes[i].circle.x, nodes[i].circle.y, nodes[i].info.value);
-		}
 
 		digitalizeGraph(binarizedImg.clone());
 
